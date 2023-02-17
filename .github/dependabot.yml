@@ -3,16 +3,13 @@ updates:
 - package-ecosystem: npm
   directory: "/"
   schedule:
-    interval: daily
-    time: "04:00"
-  pull-request-branch-name:
-    separator: "-"
+    interval: monthly
+    time: "19:00"
   open-pull-requests-limit: 10
+  
 - package-ecosystem: github-actions
   directory: "/"
   schedule:
-    interval: daily
-    time: "04:00"
-  pull-request-branch-name:
-    separator: "-"
+    interval: monthly
+    time: "19:00"
   open-pull-requests-limit: 10
