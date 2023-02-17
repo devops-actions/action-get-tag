@@ -1,3 +1,5 @@
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/devops-actions/action-get-tag/badge)](https://api.securityscorecards.dev/projects/github.com/devops-actions/action-get-tag)
+
 # Get tag Github Action
 
 Simple Action that have only one responsibility - output tag name (parsed from `GITHUB_REF` environment variable).
