@@ -1,4 +1,4 @@
-name: Get tag
+name: Get current git tag
 description: Get tag name from GITHUB_REF environment variable
 branding:
   icon: tag
