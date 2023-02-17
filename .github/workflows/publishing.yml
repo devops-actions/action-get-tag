@@ -1,0 +1,75 @@
+name: Publishing the action to the marketplace
+
+on:   
+  push:
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+  workflow_dispatch:
+    
+# Declare default GITHUB_TOKEN permissions as read only.
+permissions: read-all
+    
+jobs:
+  test-local-action:
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+
+      - uses: ./
+        name: Load used actions
+        with: 
+          PAT: ${{ secrets.GITHUB_TOKEN }}
+        id: load-actions
+      - shell: pwsh        
+        run: |
+         Write-Host "Found actions [${{ steps.load-actions.outputs.actions }}]"
+         $content = ${{ steps.load-actions.outputs.actions }}
+         New-Item -Path 'actions.json' -Value $content -Force | Out-Null
+         $actions = $content | ConvertFrom-Json
+         if ($actions.Length -le 0) {
+            throw "No actions found"
+         } 
+         else {
+            Write-Host "Found [$($actions.Length)] actions"
+         }
+            
+      - name: Upload result file as artefact
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        with: 
+          name: actions
+          path: actions.json
+    
+  publish:
+    needs: test-local-action
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      
+      - name: Get tag value
+        id: tag
+        uses: rajbos-actions/action-get-tag@12319896edaa290b27558e34a177804e9b8d077b # v1
+        
+      - name: Use tag
+        run: echo ${{ steps.tag.outputs.tag }}
+
+      - uses: actions/create-release@0cb9c9b65d5d1901c1f53e5e66eaf4afd303e70e # v1.1.4
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+          body: |
+            Release ${{ github.ref }} is available now
+
+      # todo: figure out how this works with an action :-)
+      #- uses: actions/publish-release-asset@v2
+        #with:
+          #upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          #asset_path: ./my-artifact.zip
+          #asset_name: my-artifact.zip
+          #asset_content_type: application/zip
