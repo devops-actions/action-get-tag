@@ -16,29 +16,36 @@ jobs:
     steps: 
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
 
-      - uses: ./
-        name: Load used actions
-        with: 
-          PAT: ${{ secrets.GITHUB_TOKEN }}
-        id: load-actions
-      - shell: pwsh        
+      - name: Run from main.js
+        id: tag_dev
         run: |
-         Write-Host "Found actions [${{ steps.load-actions.outputs.actions }}]"
-         $content = ${{ steps.load-actions.outputs.actions }}
-         New-Item -Path 'actions.json' -Value $content -Force | Out-Null
-         $actions = $content | ConvertFrom-Json
-         if ($actions.Length -le 0) {
-            throw "No actions found"
-         } 
-         else {
-            Write-Host "Found [$($actions.Length)] actions"
-         }
-            
-      - name: Upload result file as artefact
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
-        with: 
-          name: actions
-          path: actions.json
+          GITHUB_REF= node main.js && false || true
+          GITHUB_REF=origin/refs/tag/v1 node main.js && false || true
+          GITHUB_REF=refs/tag/v1 node main.js && false || true
+          GITHUB_REF=refs/heads/main node main.js && false || true
+          GITHUB_REF=refs/tags/v1.0.0 node main.js
+          
+      - name: Test dev
+        run: |
+          test "v1.0.0" = "${{steps.tag_dev.outputs.tag}}"
+          
+      - name: Run dev with strip v
+        id: tag_dev_strip_v
+        run: GITHUB_REF=refs/tags/v1.0.0 INPUT_STRIP_V=true node main.js
+        
+      - name: Test dev with strip v
+        run: |
+          test "1.0.0" = "${{steps.tag_dev_strip_v.outputs.tag}}"
+          
+      - name: Run from action.yml
+        id: tag_prod
+        if: startsWith(github.ref, 'refs/tags') == true
+        uses: ./
+        
+      - name: Test output from action.yml
+        if: startsWith(github.ref, 'refs/tags') == true
+        run: |
+          test -n "${{steps.tag_prod.outputs.tag}}"
     
   publish:
     needs: test-local-action
