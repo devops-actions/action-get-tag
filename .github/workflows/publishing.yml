@@ -49,7 +49,7 @@ jobs:
       
       - name: Get tag value
         id: tag
-        uses: rajbos-actions/action-get-tag@12319896edaa290b27558e34a177804e9b8d077b # v1
+        uses: rajbos-actions/action-get-tag@727a6f0a561be04e09013531e73a3983a65e3479 # v1
         
       - name: Use tag
         run: echo ${{ steps.tag.outputs.tag }}
