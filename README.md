@@ -1,6 +1,6 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/devops-actions/action-get-tag/badge)](https://api.securityscorecards.dev/projects/github.com/devops-actions/action-get-tag)
 
-# Get tag Github Action
+# Get tag GitHub Action
 
 Simple Action that have only one responsibility - output tag name (parsed from `GITHUB_REF` environment variable).
 
@@ -18,7 +18,7 @@ on:
 ```yaml
 - name: Get tag
   id: tag
-  uses: dawidd6/action-get-tag@v1
+  uses: devops-actions/action-get-tag@v1.1
   with:
     # Optionally strip `v` prefix
     strip_v: true
