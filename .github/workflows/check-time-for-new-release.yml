@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  read: contents
+  contents: read
   
 jobs:
   check-time-for-new-release:
