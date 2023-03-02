@@ -22,7 +22,7 @@ jobs:
           $release = gh api 'repos/{owner}/{repo}/releases/latest' | ConvertFrom-Json
           $tag = $release.tag_name
           
-          // get the information from the last tag (assuming that is latest!)
+          # get the information from the last tag (assuming that is latest!)
           $info = git describe --tags
           $commitsSinceLastTag = $info.Split("-")[1]
           
