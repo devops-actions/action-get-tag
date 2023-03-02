@@ -12,28 +12,4 @@ permissions:
   
 jobs:
   check-time-for-new-release:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # we need all tags
-      
-      - shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          # get latest release and the tag from it
-          $release = gh api 'repos/{owner}/{repo}/releases/latest' | ConvertFrom-Json
-          $tag = $release.tag_name
-          
-          # get the information from the last tag (assuming that is latest!)
-          $info = git describe --tags
-          $commitsSinceLastTag = $info.Split("-")[1]
-          
-          if ($commitsSinceLastTag -gt 0) {
-            Write-Host "Found [$commitsSinceLastTag] commits since last tag, we should create a release"
-          }
-          else {
-            Write-Host "No changes since last tag, so nothing to release"
-          }
-          
+    uses: devops-actions/.github/.github/workflows/time-for-new-release.yml@main
