@@ -1,3 +1,5 @@
+name: Time for new release
+
 on:
   push:
     paths:
@@ -13,6 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           # get latest release and the tag from it
           $release = gh api 'repos/{owner}/{repo}/releases/latest' | ConvertFrom-Json
