@@ -44,6 +44,7 @@ jobs:
         if: steps.needs-release.outputs.newrelease == 'true'
         run: |
           echo "A new release needs to be created" >> $GITHUB_STEP_SUMMARY
+          echo "Current version: ["${{ steps.needs-release.outputs.tag }}"]" 
       
       # if yes, call the api to create a new release
       # fetch new release tag first (sem ver? or do we need to check if we made breaking changes? Should not be breaking if all it is, are dependency updates?
