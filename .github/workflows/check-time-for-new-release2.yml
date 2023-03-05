@@ -38,7 +38,7 @@ jobs:
             echo "tag=$tag" >> $env:GITHUB_OUTPUT
             $version = $tag.Substring(1)
             echo "Converting tag to semver info: [$version]"
-            echo "version=$version" >> $env:GITHUB_STEP_SUMMARY
+            echo "version=$version" >> $env:GITHUB_OUTPUT
           }
           else {
             echo "No changes since last tag, so nothing to release"
@@ -52,8 +52,8 @@ jobs:
         shell: pwsh
         run: |
           echo "A new release needs to be created" >> $env:GITHUB_STEP_SUMMARY
-          echo "Current tag: ["${{ steps.needs-release.outputs.tag }}"]" 
-          echo "Current version: ["${{ steps.needs-release.outputs.version }}"]" 
+          echo "Current tag: [${{ steps.needs-release.outputs.tag }}]" 
+          echo "Current version: [${{ steps.needs-release.outputs.version }}]" 
           
       # if yes, call the api to create a new release
       # fetch new release tag first (sem ver? or do we need to check if we made breaking changes? Should not be breaking if all it is, are dependency updates?
