@@ -41,10 +41,15 @@ jobs:
       # todo: 
       
       - name: Show output
+        id: version
         if: steps.needs-release.outputs.newrelease == 'true'
+        shell: pwsh
         run: |
-          echo "A new release needs to be created" >> $GITHUB_STEP_SUMMARY
+          echo "A new release needs to be created" >> $env:GITHUB_STEP_SUMMARY
           echo "Current version: ["${{ steps.needs-release.outputs.tag }}"]" 
+          $version = "${{ steps.needs-release.outputs.tag }}".Substring(1)
+          echo "Converting tag to semver info: [$version]"
+          echo "version=$version" >> $env:GITHUB_STEP_SUMMARY
       
       # if yes, call the api to create a new release
       # fetch new release tag first (sem ver? or do we need to check if we made breaking changes? Should not be breaking if all it is, are dependency updates?
@@ -53,7 +58,7 @@ jobs:
         if: steps.needs-release.outputs.newrelease == 'true'
         uses: matt-FFFFFF/simple-semver@v0.1.0
         with:
-          semver-input: "${{ steps.needs-release.outputs.tag }}"
+          semver-input: "${{ steps.version.outputs.version }}"
           increment: p
 
       - name: Use new semver
