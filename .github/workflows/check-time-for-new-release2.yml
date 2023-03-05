@@ -1,4 +1,4 @@
-name: Time for new release
+name: Time for new release2
 
 on:
   workflow_dispatch:
