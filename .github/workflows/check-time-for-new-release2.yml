@@ -27,8 +27,8 @@ jobs:
           
           # get the information from the last tag (assuming that is latest!)
           $info = git describe --tags
-          $commitsSinceLastTag = $info.Split("-")[1]
           echo "Git describe info: [$info]"
+          $commitsSinceLastTag = $info.Split("-")[1]
           
           if ($commitsSinceLastTag -gt 0) {
             echo "Found [$commitsSinceLastTag] commits since last tag, we should create a release"
@@ -39,10 +39,6 @@ jobs:
             $version = $tag.Substring(1)
             echo "Converting tag to semver info: [$version]"
             echo "version=$version" >> $env:GITHUB_STEP_SUMMARY
-            
-            Current tag: [
-            v1.0.0]
-            Current version: ["]
           }
           else {
             echo "No changes since last tag, so nothing to release"
