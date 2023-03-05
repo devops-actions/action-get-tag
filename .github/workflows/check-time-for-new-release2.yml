@@ -31,7 +31,7 @@ jobs:
           if ($commitsSinceLastTag -gt 0) {
             Write-Host "Found [$commitsSinceLastTag] commits since last tag, we should create a release"
             echo "newrelease=true" >> $env:GITHUB_OUTPUT
-            echo "tag=$($info.Split("-"))"
+            echo "tag=$($info.Split("-")[0])" >> $env:GITHUB_OUTPUT
           }
           else {
             Write-Host "No changes since last tag, so nothing to release"
