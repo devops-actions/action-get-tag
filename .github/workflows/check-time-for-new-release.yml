@@ -3,7 +3,7 @@ name: Time for new release
 on:
   push:
     paths:
-    - .github/workflows/check-time-for-new-release2.yml
+    - .github/workflows/check-time-for-new-release.yml
     
   workflow_dispatch:
 
