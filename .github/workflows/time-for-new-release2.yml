@@ -1,12 +1,11 @@
 name: Time for new release
 
 on:
+  workflow_dispatch:
+  
   push:
     paths:
     - .github/workflow/time-for-new-release2.yml
-  
-  workflow_dispatch:
-  
   
 defaults:
   run:
