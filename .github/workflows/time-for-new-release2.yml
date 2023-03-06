@@ -5,7 +5,7 @@ on:
   
   push:
     paths:
-    - .github/workflow/time-for-new-release2.yml
+    - .github/workflows/time-for-new-release2.yml
   
 defaults:
   run:
