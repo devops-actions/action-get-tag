@@ -1,0 +1,77 @@
+name: Time for new release
+
+on:
+  push:
+    paths:
+    - .github/workflow/time-for-new-release2.yml
+  
+  workflow_dispatch:
+  
+  
+defaults:
+  run:
+    shell: pwsh
+  
+jobs:
+  check-time-for-new-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c #v3.3.0
+        with:
+          fetch-depth: 0 # we need all tags
+          ref: main # we only publish from the main branch
+      
+      - id: needs-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # get latest release and the tag from it
+          $release = gh api 'repos/{owner}/{repo}/releases/latest' | ConvertFrom-Json
+          $tag = $release.tag_name
+          
+          # get the information from the last tag (assuming that is latest!)
+          $info = git describe --tags
+          echo "Git describe info: [$info]"
+          $commitsSinceLastTag = $info.Split("-")[1]
+          
+          if ($commitsSinceLastTag -gt 0) {
+            echo "Found [$commitsSinceLastTag] commits since last tag, we should create a release"
+            echo "newrelease=true" >> $env:GITHUB_OUTPUT
+            $tag = $($info.Split("-"))[0]
+            echo "Found tag [$tag]"
+            echo "tag=$tag" >> $env:GITHUB_OUTPUT
+            $version = $tag.Substring(1)
+            echo "Converting tag to semver info: [$version]"
+            echo "version=$version" >> $env:GITHUB_OUTPUT
+          }
+          else {
+            echo "No changes since last tag, so nothing to release"
+            echo "newrelease=false" >> $env:GITHUB_OUTPUT
+          }
+      
+      - name: Show output
+        if: steps.needs-release.outputs.newrelease == 'true'
+        run: |
+          echo "A new release needs to be created" >> $env:GITHUB_STEP_SUMMARY
+          echo "Current tag: [${{ steps.needs-release.outputs.tag }}]" >> $env:GITHUB_STEP_SUMMARY
+          echo "Current version: [${{ steps.needs-release.outputs.version }}]" >> $env:GITHUB_STEP_SUMMARY
+          
+      - name: Show output when false
+        if: steps.needs-release.outputs.newrelease == 'false'
+        run: |
+          echo "No new release needs to be created" >> $env:GITHUB_STEP_SUMMARY
+          
+      # if yes, call the api to create a new release
+      # fetch new release tag first (sem ver? or do we need to check if we made breaking changes? Should not be breaking if all it is, are dependency updates?
+      - name: Simple Semver
+        id: semver
+        if: steps.needs-release.outputs.newrelease == "true"
+        uses: rajbos-actions/simple-semver@967d66a65b0c5afae2a815ab2d311f66a32293ab # version in main, will become v0.1.1 I guess?
+        with:
+          semver-input: "${{ steps.needs-release.outputs.version }}"
+          increment: p
+
+      - name: Use new semver
+        run: |
+          echo "New tag:[${{ steps.semver.outputs.semver }}]" >> $env:GITHUB_STEP_SUMMARY
+          echo "New tag=[${{ steps.semver.outputs.semver }}]" >> $env:GITHUB_OUTPUT
