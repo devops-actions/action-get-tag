@@ -69,6 +69,14 @@ jobs:
         run: |
           echo "No new release needs to be created" >> $env:GITHUB_STEP_SUMMARY
           
+  test-new-release:
+    runs-on: ubuntu-latest
+    needs: check-time-for-new-release
+    steps:
+      - run: |
+          echo "Release needed: ${{ needs.check-time-for-new-release.outputs.new-release-needed }}"
+          echo "Current version: ${{ needs.check-time-for-new-release.outputs.current-version }}""
+          
   create-new-release:
     runs-on: ubuntu-latest
     needs: check-time-for-new-release
