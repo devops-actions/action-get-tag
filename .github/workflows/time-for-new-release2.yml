@@ -73,7 +73,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: check-time-for-new-release
     steps:
-      - run: |
+      - env:
+          needed: "${{ needs.check-time-for-new-release.outputs.new-release-needed }}"
+          version: "${{ needs.check-time-for-new-release.outputs.version }}"
+        run: |
           echo "Release needed: ${{ needs.check-time-for-new-release.outputs.new-release-needed }}"
           echo "Current version: ${{ needs.check-time-for-new-release.outputs.current-version }}"
           
