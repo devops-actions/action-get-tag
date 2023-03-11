@@ -69,17 +69,6 @@ jobs:
         run: |
           echo "No new release needs to be created" >> $env:GITHUB_STEP_SUMMARY
           
-  test-new-release:
-    runs-on: ubuntu-latest
-    needs: check-time-for-new-release
-    steps:
-      - env:
-          needed: "${{ needs.check-time-for-new-release.outputs.new-release-needed }}"
-          version: "${{ needs.check-time-for-new-release.outputs.version }}"
-        run: |
-          echo "Release needed: ${{ needs.check-time-for-new-release.outputs.new-release-needed }}"
-          echo "Current version: ${{ needs.check-time-for-new-release.outputs.current-version }}"
-          
   create-new-release:
     runs-on: ubuntu-latest
     needs: check-time-for-new-release
@@ -123,10 +112,8 @@ jobs:
           echo "SPDX_SBOM_FILENAME=$SPDX_SBOM_FILENAME" >> $env:GITHUB_OUTPUT
           echo "CYCLONEDX_SBOM_FILENAME=$CYCLONEDX_SBOM_FILENAME" >> $env:GITHUB_OUTPUT
           
-#################################################################################################
-# TODO: 
-#  
-#  - make the new release, add the SBOM's to it
+################################################################################################## 
+#   temp for testing
 #################################################################################################
       - run: |
          # check the outputs
@@ -136,3 +123,19 @@ jobs:
          echo "-----------------------------------------------------------------"
          echo "CYCLONEDX_SBOM_FILENAME = ${{ steps.sbom.outputs.CYCLONEDX_SBOM_FILENAME }}"
          cat ${{ steps.sbom.outputs.CYCLONEDX_SBOM_FILENAME }}
+
+#################################################################################################
+# TODO: 
+#  - create a tag
+#  - make the new release, add the SBOM's to it
+#################################################################################################
+      - run: |
+          # tag the current commit
+          git tag v${{ steps.semver.outputs.semver }}
+          
+          # push the tags back to the repo
+          git push --tags
+          
+          # create a new release
+          gh release create v${{ steps.semver.outputs.semver }} --generate-release-notes '${{ steps.sbom.outputs.CYCLONEDX_SBOM_FILENAME }}#SBOM CycloneDX'
+          
