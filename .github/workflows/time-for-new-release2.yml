@@ -75,7 +75,7 @@ jobs:
     steps:
       - run: |
           echo "Release needed: ${{ needs.check-time-for-new-release.outputs.new-release-needed }}"
-          echo "Current version: ${{ needs.check-time-for-new-release.outputs.current-version }}""
+          echo "Current version: ${{ needs.check-time-for-new-release.outputs.current-version }}"
           
   create-new-release:
     runs-on: ubuntu-latest
