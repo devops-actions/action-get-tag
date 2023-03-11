@@ -101,7 +101,7 @@ jobs:
           $sbom = gh sbom -c -l | ConvertFrom-Json
           $sbom | ConvertTo-Json -Depth 100 >> $CYCLONEDX_SBOM_FILENAME
           
-          echo "SPDX_SBOM_FILENAME=$SPDXSBOM_FILENAME" >> $env:GITHUB_OUTPUT
+          echo "SPDX_SBOM_FILENAME=$SPDX_SBOM_FILENAME" >> $env:GITHUB_OUTPUT
           echo "CYCLONEDX_SBOM_FILENAME=$CYCLONEDX_SBOM_FILENAME" >> $env:GITHUB_OUTPUT
           
 #################################################################################################
@@ -112,4 +112,8 @@ jobs:
       - run: |
          # check the outputs
          echo "SPDXSBOM_FILENAME = ${{ steps.sbom.outputs.SPDX_SBOM_FILENAME }}"
+         cat ${{ steps.sbom.outputs.SPDX_SBOM_FILENAME }}
+         
+         echo "-----------------------------------------------------------------"
          echo "CYCLONEDX_SBOM_FILENAME = ${{ steps.sbom.outputs.CYCLONEDX_SBOM_FILENAME }}"
+         cat ${{ steps.sbom.outputs.CYCLONEDX_SBOM_FILENAME }}
