@@ -15,8 +15,8 @@ jobs:
   check-time-for-new-release:
     runs-on: ubuntu-latest
     outputs:
-      new-release-needed: steps.needs-release.outputs.newrelease
-      current-version: steps.needs-release.outputs.version
+      new-release-needed: ${{ steps.needs-release.outputs.newrelease }}
+      current-version: ${{ steps.needs-release.outputs.version }}
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c #v3.3.0
         with:
