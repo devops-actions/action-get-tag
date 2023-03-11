@@ -64,7 +64,7 @@ jobs:
       # fetch new release tag first (sem ver? or do we need to check if we made breaking changes? Should not be breaking if all it is, are dependency updates?
       - name: Simple Semver
         id: semver
-        if: steps.needs-release.outputs.newrelease == "true"
+        if: steps.needs-release.outputs.newrelease == 'true'
         uses: rajbos-actions/simple-semver@967d66a65b0c5afae2a815ab2d311f66a32293ab # version in main, will become v0.1.1 I guess?
         with:
           semver-input: "${{ steps.needs-release.outputs.version }}"
