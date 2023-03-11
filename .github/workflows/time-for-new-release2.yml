@@ -84,6 +84,8 @@ jobs:
       - name: Generate an SBOM for the repo
         id: sbom
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           # install the extension
           gh ext install advanced-security/gh-sbom
