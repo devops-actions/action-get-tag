@@ -91,7 +91,7 @@ jobs:
           
           # run it for a CycloneDX SBOM
           $sbom = gh sbom -c -l | ConvertFrom-Json
-          $sbom | ConvertTo-Json -Depth 100 >>  >> 
+          $sbom | ConvertTo-Json -Depth 100 >> $CYCLONEDX_SBOM_FILENAME
           
           echo "SPDX_SBOM_FILENAME=$SPDXSBOM_FILENAME" >> $env:GITHUB_OUTPUT
           echo "CYCLONEDX_SBOM_FILENAME=$CYCLONEDX_SBOM_FILENAME" >> $env:GITHUB_OUTPUT
