@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       new-release-needed: steps.needs-release.outputs.newrelease
+      current-version: steps.needs-release.outputs.version
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c #v3.3.0
         with:
@@ -24,7 +25,7 @@ jobs:
       
       - id: needs-release
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: "${{ github.token }}" # needed for gh cli calls
         run: |
           # get latest release and the tag from it
           $release = gh api 'repos/{owner}/{repo}/releases/latest' | ConvertFrom-Json
@@ -81,7 +82,7 @@ jobs:
         id: semver        
         uses: rajbos-actions/simple-semver@967d66a65b0c5afae2a815ab2d311f66a32293ab # version in main, will become v0.1.1 I guess?
         with:
-          semver-input: "${{ steps.needs-release.outputs.version }}"
+          semver-input: "${{ needs.check-time-for-new-release.outputs.current-version }}"
           increment: p
 
       - name: Use new semver
@@ -91,7 +92,6 @@ jobs:
 
       - name: Generate an SBOM for the repo
         id: sbom
-        shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
