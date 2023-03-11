@@ -31,6 +31,12 @@ jobs:
           # get the information from the last tag (assuming that is latest!)
           $info = git describe --tags
           echo "Git describe info: [$info]"
+          
+          if ($null -eq $info) {
+            Write-Error "Error loading information from tags! There might not be any? Halting execution"
+            return 1
+          }
+          
           $commitsSinceLastTag = $info.Split("-")[1]
           
           if ($commitsSinceLastTag -gt 0) {
