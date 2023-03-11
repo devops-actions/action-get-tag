@@ -72,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: check-time-for-new-release
     # if yes, call the api to create a new release
-    if: github.check-time-for-new-release.outputs.new-release-needed == 'true'
+    if: needs.check-time-for-new-release.outputs.new-release-needed == 'true'
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c #v3.3.0
       
