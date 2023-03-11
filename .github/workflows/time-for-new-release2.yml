@@ -74,3 +74,34 @@ jobs:
         run: |
           echo "New tag:[${{ steps.semver.outputs.semver }}]" >> $env:GITHUB_STEP_SUMMARY
           echo "New tag=[${{ steps.semver.outputs.semver }}]" >> $env:GITHUB_OUTPUT
+
+      - name: Generate an SBOM for the repo
+        id: sbom
+        shell: pwsh
+        run: |
+          # install the extension
+          gh ext install advanced-security/gh-sbom
+          
+          SPDX_SBOM_FILENAME="sbom-spdx.json"
+          CYCLONEDX_SBOM_FILENAME="sbom-cyclonedx.json"
+          
+          # run it for an SPDX SBOM
+          $sbom = gh sbom -l | ConvertFrom-Json
+          $sbom | ConvertTo-Json -Depth 100 >> $SPDX_SBOM_FILENAME
+          
+          # run it for a CycloneDX SBOM
+          $sbom = gh sbom -c -l | ConvertFrom-Json
+          $sbom | ConvertTo-Json -Depth 100 >>  >> 
+          
+          echo "SPDX_SBOM_FILENAME=$SPDXSBOM_FILENAME" >> $env:GITHUB_OUTPUT
+          echo "CYCLONEDX_SBOM_FILENAME=$CYCLONEDX_SBOM_FILENAME" >> $env:GITHUB_OUTPUT
+          
+#################################################################################################
+# TODO: 
+#  
+#  - make the new release, add the SBOM's to it
+#################################################################################################
+      - run: |
+         # check the outputs
+         echo "SPDXSBOM_FILENAME = ${{ steps.sbom.outputs.SPDX_SBOM_FILENAME }}"
+         echo "CYCLONEDX_SBOM_FILENAME = ${{ steps.sbom.outputs.CYCLONEDX_SBOM_FILENAME }}"
