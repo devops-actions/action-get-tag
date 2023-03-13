@@ -1,0 +1,11 @@
+name: Workflow linting
+on:
+  push:
+  
+  pull_request:
+  
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: devops-actions/actionlint@main
