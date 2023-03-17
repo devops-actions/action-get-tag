@@ -40,7 +40,7 @@ jobs:
           $supportedLanguages = @("go", "javascript", "csharp", "python", "cpp", "java", "ruby")
           $foundLanguages = $supportedLanguages | Where-Object { $languages.$_ -ne $null }
           echo "Found these supported languages in this repo: [$($foundLanguages -join ", ")]"
-          if ($foundLanguages.Length- eq 1) {
+          if ($foundLanguages.Length -eq 1) {
             echo "language-array=$foundLanguages" > $env:GITHUB_OUTPUT
           }
           else {
