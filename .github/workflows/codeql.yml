@@ -40,7 +40,7 @@ jobs:
           $supportedLanguages = @("go", "javascript", "csharp", "python", "cpp", "java", "ruby")
           $foundLanguages = $supportedLanguages | Where-Object { $languages.$_ -ne $null }
           echo "Found these supported languages in this repo: [$($foundLanguages -join ", ")]]"
-          echo "language-array=$($foundLanguages -join ", ")]" > $env:GITHUB_OUTPUT
+          echo "language-array=[$($foundLanguages -join ", ")]" > $env:GITHUB_OUTPUT
 
   CodeQL-Build:
     # CodeQL runs on ubuntu-latest, windows-latest, and macos-latest
@@ -49,7 +49,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [${{ needs.find-language.outputs.language-array }}]
+        language: ${{ needs.find-language.outputs.language-array }}
 
     permissions:
       # required for all workflows
