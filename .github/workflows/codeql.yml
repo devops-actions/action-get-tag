@@ -28,13 +28,9 @@ jobs:
       - name: Setup enry
         uses: fabasoad/setup-enry-action@a7c4d12a081d049c7c33bc992df49643f4ab5c0b # v0.3.1
 
-      - name: Run CLI
-        run: enry
-        
       - name: Run enry CLI
         run: |
           echo "{$(enry | sed 's/^\(.*\)\t\(.*\)$/\"\2\":\"\1\"/' | paste -sd "," -)}" > languages.json
-          cat languages.json
       
       - name: Find supported languages
         id: find-languages
@@ -43,13 +39,17 @@ jobs:
           $languages = (Get-Content languages.json).ToLower() | ConvertFrom-Json
           $supportedLanguages = @("go", "javascript", "csharp", "python", "cpp", "java", "ruby")
           $foundLanguages = $supportedLanguages | Where-Object { $languages.$_ -ne $null }
-          
-          echo "language-array=$($foundLanguages)" > $env:GITHUB_OUTPUT
+          echo "Found these supported languages in this repo: [$($foundLanguages -join ", ")]]"
+          echo "language-array=$($foundLanguages -join ", ")]" > $env:GITHUB_OUTPUT
 
   CodeQL-Build:
     # CodeQL runs on ubuntu-latest, windows-latest, and macos-latest
     runs-on: ubuntu-latest
     needs: find-language
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ${{ fromJson(needs.find-language.outputs.language-array) }}
 
     permissions:
       # required for all workflows
@@ -59,10 +59,7 @@ jobs:
       actions: read
       contents: read
 
-    steps:
-      # echo languages
-      - name: Echo languages
-        run: echo ${{ needs.find-language.outputs.language-array }}
+    steps:      
 
       - name: Checkout repository
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
@@ -70,6 +67,8 @@ jobs:
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
         uses: github/codeql-action/init@32dc499307d133bb5085bae78498c0ac2cf762d5 # v2.2.5
+        with:
+          languages: ${{ matrix.language }}
         # Override language selection by uncommenting this and choosing your languages
         # with:
         #   languages: go, javascript, csharp, python, cpp, java, ruby
