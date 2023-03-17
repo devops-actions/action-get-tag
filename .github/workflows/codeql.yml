@@ -41,7 +41,7 @@ jobs:
           $foundLanguages = $supportedLanguages | Where-Object { $languages.$_ -ne $null }
           echo "Found these supported languages in this repo: [$($foundLanguages -join ", ")]"
           if ($foundLanguages.Count -eq 1) {
-            echo "language-array=$foundLanguages" > $env:GITHUB_OUTPUT
+            echo "language-array=[$foundLanguages]" > $env:GITHUB_OUTPUT
           }
           else {
             echo "language-array=[$($foundLanguages -join ", ")]" > $env:GITHUB_OUTPUT
