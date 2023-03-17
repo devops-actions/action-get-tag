@@ -39,8 +39,8 @@ jobs:
       - name: Find supported languages
         id: find-languages
         shell: pwsh
-        run:
-          $languages = (Get-Content languages.json).ToLower() | ConvertFrom-Json          
+        run: |
+          $languages = (Get-Content languages.json).ToLower() | ConvertFrom-Json
           $supportedLanguages = @("go", "javascript", "csharp", "python", "cpp", "java", "ruby")
           $foundLanguages = $supportedLanguages | Where-Object { $languages.$_ -ne $null }
           
