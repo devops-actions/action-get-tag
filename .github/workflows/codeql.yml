@@ -27,10 +27,14 @@ jobs:
 
       - name: Setup enry
         uses: fabasoad/setup-enry-action@a7c4d12a081d049c7c33bc992df49643f4ab5c0b # v0.3.1
+
+      - name: Run CLI
+        run: enry
         
       - name: Run enry CLI
         run: |
           echo "{$(enry | sed 's/^\(.*\)\t\(.*\)$/\"\2\":\"\1\"/' | paste -sd "," -)}" > languages.json
+          cat languages.json
       
       - name: Find supported languages
         id: find-languages
