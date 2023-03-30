@@ -18,7 +18,7 @@ on:
 ```yaml
 - name: Get tag
   id: tag
-  uses: devops-actions/action-get-tag@v1.1
+  uses: devops-actions/action-get-tag@v1.0.1
   with:
     # Optionally strip `v` prefix
     strip_v: true
