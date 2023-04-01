@@ -56,7 +56,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: ${{ needs.find-language.outputs.language-array }}
+        language: ${{ fromJSON(needs.find-language.outputs.language-array) }}
 
     permissions:
       # required for all workflows
