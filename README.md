@@ -1,4 +1,7 @@
+## Forked from [dawidd6/action-get-tag](https://github.com/dawidd6/action-get-tag) which has been an archived repo that I was relying on. Updated to fix issue with `set-output` (Deprecated). 
+
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/devops-actions/action-get-tag/badge)](https://api.securityscorecards.dev/projects/github.com/devops-actions/action-get-tag)
+
 
 # Get tag GitHub Action
 
