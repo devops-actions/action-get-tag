@@ -20,9 +20,8 @@ on:
   id: tag
   uses: devops-actions/action-get-tag@v1.1
   with:
-    # Optionally strip `v` prefix
-    strip_v: true # Optional remove v character from version
-    default: v0.0.0 # Optional default version when tag not found
+    strip_v: true # Optional: Remove 'v' character from version
+    default: v0.0.0 # Optional: Default version when tag not found
 
 - name: Use tag
   run: echo ${{steps.tag.outputs.tag}}
