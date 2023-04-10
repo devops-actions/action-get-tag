@@ -1,7 +1,9 @@
 name: Testing the action
 
 on: 
-  push: 
+  push:
+  
+  pull_request:
 
   workflow_dispatch:
 
@@ -19,10 +21,15 @@ jobs:
       id: tag_dev
       run: |
         GITHUB_REF=node main.js && false || true
+        echo "1. GITHUB_REF"
         GITHUB_REF=origin/refs/tag/v1 node main.js && false || true
+        echo "2. GITHUB_REF"
         GITHUB_REF=refs/tag/v1 node main.js && false || true
+        echo "3. GITHUB_REF"
         GITHUB_REF=refs/heads/main node main.js && false || true
+        echo "4. GITHUB_REF"
         GITHUB_REF=refs/tags/v1.0.0 node main.js
+        echo "5. GITHUB_REF"
         
     - name: Test dev
       run: |
@@ -30,7 +37,8 @@ jobs:
         
     - name: Run dev with strip v
       id: tag_dev_strip_v
-      run: GITHUB_REF=refs/tags/v1.0.0 INPUT_STRIP_V=true node main.js
+      run: |
+        GITHUB_REF=refs/tags/v1.0.0 INPUT_STRIP_V=true node main.js
       
     - name: Test dev with strip v
       run: |
