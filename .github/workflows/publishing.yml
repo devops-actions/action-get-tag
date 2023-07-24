@@ -19,10 +19,10 @@ jobs:
       - name: Run from main.js
         id: tag_dev
         run: |
-          GITHUB_REF= node main.js && false || true
-          GITHUB_REF=origin/refs/tag/v1 node main.js && false || true
-          GITHUB_REF=refs/tag/v1 node main.js && false || true
-          GITHUB_REF=refs/heads/main node main.js && false || true
+          GITHUB_REF=(node main.js && false) || true
+          GITHUB_REF=(origin/refs/tag/v1 node main.js && false) || true
+          GITHUB_REF=(refs/tag/v1 node main.js && false) || true
+          GITHUB_REF=(refs/heads/main node main.js && false) || true
           GITHUB_REF=refs/tags/v1.0.0 node main.js
           
       - name: Test dev
