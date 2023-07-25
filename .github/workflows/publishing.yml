@@ -19,8 +19,8 @@ jobs:
       - name: Run from main.js
         id: tag_dev
         run: |
-          # shellcheck disable=SC2181
-          GITHUB_REF="" node main.js 
+          GITHUB_REF="" node main.js
+          # shellcheck disable=SC2181 
           if [ $? -ne 1 ]; then echo "Expected failure on no GITHUB_REF set"; fi
 
           GITHUB_REF=origin/refs/tag/v1 node main.js
