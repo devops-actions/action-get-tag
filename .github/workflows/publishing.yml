@@ -20,19 +20,23 @@ jobs:
         id: tag_dev
         run: |
           GITHUB_REF="" node main.js
-          # shellcheck disable=SC2181 
+          # shellcheck disable=SC2181
           if [ $? -ne 1 ]; then echo "Expected failure on no GITHUB_REF set"; fi
 
           GITHUB_REF=origin/refs/tag/v1 node main.js
+          # shellcheck disable=SC2181
           if [ $? -ne 1 ]; then echo "Expected failure on invalid ref"; fi
 
           GITHUB_REF=refs/tag/v1 node main.js
+          # shellcheck disable=SC2181
           if [ $? -ne 0 ]; then echo "Not expected a failure on valid ref to tag"; fi
 
           GITHUB_REF=refs/heads/main node main.js
+          # shellcheck disable=SC2181
           if [ $? -ne 0 ]; then echo "Not expected a failure on valid ref to branch"; fi
 
           GITHUB_REF=refs/tags/v1.0.0 node main.js
+          # shellcheck disable=SC2181
           if [ $? -ne 0 ]; then echo "Not expected a failure on valid ref with minor version"; fi
           
       - name: Test dev
