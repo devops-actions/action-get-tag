@@ -79,6 +79,7 @@ jobs:
       run: |
         test -n "${{steps.tag_prod.outputs.tag}}"
 
+
     - name: Run dev with no strip_v and a default
       if: always()
       id: tag_dev_no_strip_v_default
@@ -88,5 +89,18 @@ jobs:
     - name: Test dev with no strip_v and default value
       if: always()
       run: |
-        test "1.0.0" = "${{steps.tag_dev_no_strip_v_default.outputs.tag}}"
+        test "v1.0.0" = "${{steps.tag_dev_no_strip_v_default.outputs.tag}}"
+
+
+    - name: Run dev with no tag, no strip_v and a default and not a tag
+      if: always()
+      id: no_tag_dev_no_strip_v_default
+      run: |
+        GITHUB_REF=random_branch INPUT_STRIP_V="false" INPUT_DEFAULT="v0.99.0" node main.js
+      
+    - name: Test dev with no tag, no strip_v and default value
+      if: always()
+      run: |
+        test "v0.99.0" = "${{steps.no_tag_dev_no_strip_v_default.outputs.tag}}"
+   
    
