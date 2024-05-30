@@ -18,7 +18,7 @@ async function main() {
       throw `Not a tag ref (${ref}) or default version not set`
 
     if(!tag)
-      throw `Not tag version found`
+      throw `No tag version found`
 
     if(strip_v === "true" && tag.startsWith("v"))
       tag = tag.replace(/^v/, "")
