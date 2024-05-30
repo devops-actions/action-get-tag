@@ -46,15 +46,18 @@ jobs:
         if [ $? -ne 0 ]; then echo "Not expected a failure on valid ref with minor version"; fi
         
     - name: Test dev
+      if: always()
       run: |
         test "v1.0.0" = "${{steps.tag_dev.outputs.tag}}"
         
     - name: Run dev with strip v
+      if: always()
       id: tag_dev_strip_v
       run: |
-        GITHUB_REF=refs/tags/v1.0.0 INPUT_STRIP_V=true node main.js
+        GITHUB_REF=refs/tags/v1.0.0 INPUT_STRIP_V="true" node main.js
       
     - name: Test dev with strip v
+      if: always()
       run: |
         test "1.0.0" = "${{steps.tag_dev_strip_v.outputs.tag}}"
         
