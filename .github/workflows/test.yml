@@ -83,7 +83,7 @@ jobs:
       if: always()
       id: tag_dev_no_strip_v_default
       run: |
-        GITHUB_REF=refs/tags/v1.0.0 INPUT_STRIP_V="false" INPUT_DEFAULT="v0.0.0"" node main.js
+        GITHUB_REF=refs/tags/v1.0.0 INPUT_STRIP_V="false" INPUT_DEFAULT="v0.0.0" node main.js
       
     - name: Test dev with no strip_v and default value
       if: always()
