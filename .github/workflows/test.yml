@@ -17,24 +17,32 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
       
-    - name: Run dev
-      id: tag_dev
+    - name: Run dev with error cases (should fail)
       run: |
         echo "Testing with no GITHUB_REF set"
         GITHUB_REF="" node main.js
         # shellcheck disable=SC2181
         if [ $? -ne 1 ]; then echo "Expected failure on no GITHUB_REF set"; fi
 
+    - name: Run dev with error cases (should fail)
+      if: always()
+      run: |
         echo "Testing with invalid GITHUB_REF"
         GITHUB_REF=origin/refs/tag/v1 node main.js
         # shellcheck disable=SC2181
         if [ $? -ne 1 ]; then echo "Expected failure on invalid ref"; fi
 
+    - name: Run dev with different error cases (should fail)
+      if: always()
+      run: |
         echo "Testing with valid GITHUB_REF"
         GITHUB_REF=refs/tag/v1 node main.js
         # shellcheck disable=SC2181
         if [ $? -ne 0 ]; then echo "Not expected a failure on valid ref to tag"; fi
 
+    - name: Run dev
+      id: tag_dev
+      run: |
         echo "Testing with valid GITHUB_REF"
         GITHUB_REF=refs/heads/main node main.js
         # shellcheck disable=SC2181
@@ -72,6 +80,7 @@ jobs:
         test -n "${{steps.tag_prod.outputs.tag}}"
 
     - name: Run with a default value
+      if: always()
       uses: ./
       with:
         default: v0.0.0
