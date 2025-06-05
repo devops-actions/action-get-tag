@@ -1,0 +1,15 @@
+name: Time for new release
+
+on:
+  push:
+    paths:
+    - .github/workflows/check-time-for-new-release.yml
+    
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  
+jobs:
+  check-time-for-new-release:
+    uses: devops-actions/.github/.github/workflows/time-for-new-release.yml@main
