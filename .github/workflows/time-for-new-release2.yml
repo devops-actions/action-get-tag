@@ -1,0 +1,141 @@
+name: Time for new release2
+
+on:
+  workflow_dispatch:
+  
+  push:
+    paths:
+    - .github/workflows/time-for-new-release2.yml
+  
+defaults:
+  run:
+    shell: pwsh
+  
+jobs:
+  check-time-for-new-release:
+    runs-on: ubuntu-latest
+    outputs:
+      new-release-needed: ${{ steps.needs-release.outputs.newrelease }}
+      current-version: ${{ steps.needs-release.outputs.version }}
+    steps:
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c #v3.3.0
+        with:
+          fetch-depth: 0 # we need all tags
+          ref: main # we only publish from the main branch
+      
+      - id: needs-release
+        env:
+          GH_TOKEN: "${{ github.token }}" # needed for gh cli calls
+        run: |
+          # get latest release and the tag from it
+          $release = gh api 'repos/{owner}/{repo}/releases/latest' | ConvertFrom-Json
+          $tag = $release.tag_name
+          
+          # get the information from the last tag (assuming that is latest!)
+          $info = git describe --tags
+          echo "Git describe info: [$info]"
+          
+          if ($null -eq $info) {
+            Write-Error "Error loading information from tags! There might not be any? Halting execution"
+            return 1
+          }
+          
+          $commitsSinceLastTag = $info.Split("-")[1]
+          
+          if ($commitsSinceLastTag -gt 0) {
+            echo "Found [$commitsSinceLastTag] commits since last tag, we should create a release"
+            echo "newrelease=true" >> $env:GITHUB_OUTPUT
+            $tag = $($info.Split("-"))[0]
+            echo "Found tag [$tag]"
+            echo "tag=$tag" >> $env:GITHUB_OUTPUT
+            $version = $tag.Substring(1)
+            echo "Converting tag to semver info: [$version]"
+            echo "version=$version" >> $env:GITHUB_OUTPUT
+          }
+          else {
+            echo "No changes since last tag, so nothing to release"
+            echo "newrelease=false" >> $env:GITHUB_OUTPUT
+          }
+      
+      - name: Show output
+        if: steps.needs-release.outputs.newrelease == 'true'
+        run: |
+          echo "A new release needs to be created" >> $env:GITHUB_STEP_SUMMARY
+          echo "Current tag: [${{ steps.needs-release.outputs.tag }}]" >> $env:GITHUB_STEP_SUMMARY
+          echo "Current version: [${{ steps.needs-release.outputs.version }}]" >> $env:GITHUB_STEP_SUMMARY
+          
+      - name: Show output when false
+        if: steps.needs-release.outputs.newrelease == 'false'
+        run: |
+          echo "No new release needs to be created" >> $env:GITHUB_STEP_SUMMARY
+          
+  create-new-release:
+    runs-on: ubuntu-latest
+    needs: check-time-for-new-release
+    # if yes, call the api to create a new release
+    if: needs.check-time-for-new-release.outputs.new-release-needed == 'true'
+    steps:
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c #v3.3.0
+      
+      # fetch new release tag first (sem ver? or do we need to check if we made breaking changes? Should not be breaking if all it is, are dependency updates?
+      - name: Simple Semver
+        id: semver        
+        uses: rajbos-actions/simple-semver@967d66a65b0c5afae2a815ab2d311f66a32293ab # version in main, will become v0.1.1 I guess?
+        with:
+          semver-input: "${{ needs.check-time-for-new-release.outputs.current-version }}"
+          increment: p
+
+      - name: Use new semver
+        run: |
+          echo "New tag:[${{ steps.semver.outputs.semver }}]" >> $env:GITHUB_STEP_SUMMARY
+          echo "New tag=[${{ steps.semver.outputs.semver }}]" >> $env:GITHUB_OUTPUT
+
+      - name: Generate an SBOM for the repo
+        id: sbom
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # install the extension
+          gh ext install advanced-security/gh-sbom
+          
+          $SPDX_SBOM_FILENAME="sbom-spdx.json"
+          $CYCLONEDX_SBOM_FILENAME="sbom-cyclonedx.json"
+          
+          # run it for an SPDX SBOM
+          $sbom = gh sbom -l | ConvertFrom-Json
+          $sbom | ConvertTo-Json -Depth 100 >> $SPDX_SBOM_FILENAME
+          
+          # run it for a CycloneDX SBOM
+          $sbom = gh sbom -c -l | ConvertFrom-Json
+          $sbom | ConvertTo-Json -Depth 100 >> $CYCLONEDX_SBOM_FILENAME
+          
+          echo "SPDX_SBOM_FILENAME=$SPDX_SBOM_FILENAME" >> $env:GITHUB_OUTPUT
+          echo "CYCLONEDX_SBOM_FILENAME=$CYCLONEDX_SBOM_FILENAME" >> $env:GITHUB_OUTPUT
+          
+################################################################################################## 
+#   temp for testing
+#################################################################################################
+      - run: |
+         # check the outputs
+         echo "SPDXSBOM_FILENAME = ${{ steps.sbom.outputs.SPDX_SBOM_FILENAME }}"
+         cat ${{ steps.sbom.outputs.SPDX_SBOM_FILENAME }}
+         
+         echo "-----------------------------------------------------------------"
+         echo "CYCLONEDX_SBOM_FILENAME = ${{ steps.sbom.outputs.CYCLONEDX_SBOM_FILENAME }}"
+         cat ${{ steps.sbom.outputs.CYCLONEDX_SBOM_FILENAME }}
+
+#################################################################################################
+# TODO: 
+#  - create a tag
+#  - make the new release, add the SBOM's to it
+#################################################################################################
+      - run: |
+          # tag the current commit
+          git tag v${{ steps.semver.outputs.semver }}
+          
+          # push the tags back to the repo
+          git push --tags
+          
+          # create a new release
+          gh release create v${{ steps.semver.outputs.semver }} --generate-release-notes '${{ steps.sbom.outputs.CYCLONEDX_SBOM_FILENAME }}#SBOM CycloneDX'
+          
