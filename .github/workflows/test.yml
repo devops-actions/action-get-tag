@@ -123,4 +123,4 @@ jobs:
     - name: Eco CI Energy Estimation
       uses: green-coding-berlin/eco-ci-energy-estimation@v5.3.0
       with:
-        task: final-measurement
+        task: get-measurement
