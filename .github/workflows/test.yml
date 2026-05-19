@@ -20,33 +20,45 @@ jobs:
     - name: Run dev with error cases (should fail)
       run: |
         echo "Testing with no GITHUB_REF set"
+        set +e
         GITHUB_REF="" node main.js
+        EXIT_CODE=$?
+        set -e
         # shellcheck disable=SC2181
-        if [ $? -ne 1 ]; then echo "Expected failure on no GITHUB_REF set"; fi
+        if [ $EXIT_CODE -ne 1 ]; then echo "Expected failure on no GITHUB_REF set"; fi
 
     - name: Run dev with error cases (should fail)
       if: always()
       run: |
         echo "Testing with invalid GITHUB_REF"
+        set +e
         GITHUB_REF=origin/refs/tag/v1 node main.js
+        EXIT_CODE=$?
+        set -e
         # shellcheck disable=SC2181
-        if [ $? -ne 1 ]; then echo "Expected failure on invalid ref"; fi
+        if [ $EXIT_CODE -ne 1 ]; then echo "Expected failure on invalid ref"; fi
 
     - name: Run dev with different error cases (should fail)
       if: always()
       run: |
         echo "Testing with valid GITHUB_REF"
+        set +e
         GITHUB_REF=refs/tag/v1 node main.js
+        EXIT_CODE=$?
+        set -e
         # shellcheck disable=SC2181
-        if [ $? -ne 0 ]; then echo "Not expected a failure on valid ref to tag"; fi
+        if [ $EXIT_CODE -ne 0 ]; then echo "Not expected a failure on valid ref to tag"; fi
 
     - name: Run dev
       id: tag_dev
       run: |
         echo "Testing with valid GITHUB_REF"
+        set +e
         GITHUB_REF=refs/heads/main node main.js
+        EXIT_CODE=$?
+        set -e
         # shellcheck disable=SC2181
-        if [ $? -ne 0 ]; then echo "Not expected a failure on valid ref to branch"; fi
+        if [ $EXIT_CODE -ne 0 ]; then echo "Not expected a failure on valid ref to branch"; fi
 
         echo "Testing with valid GITHUB_REF"
         GITHUB_REF=refs/tags/v1.0.0 node main.js
