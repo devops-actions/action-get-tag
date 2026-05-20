@@ -6,6 +6,9 @@ on:
   push:
     paths:
     - .github/workflows/time-for-new-release2.yml
+
+permissions:
+  contents: read
   
 defaults:
   run:
@@ -13,6 +16,8 @@ defaults:
   
 jobs:
   check-time-for-new-release:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     outputs:
       new-release-needed: ${{ steps.needs-release.outputs.newrelease }}
@@ -70,6 +75,8 @@ jobs:
           echo "No new release needs to be created" >> $env:GITHUB_STEP_SUMMARY
           
   create-new-release:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     needs: check-time-for-new-release
     # if yes, call the api to create a new release
