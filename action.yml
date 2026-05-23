@@ -15,5 +15,5 @@ outputs:
   tag:
     description: Git tag name
 runs:
-  using: node20
+  using: node24
   main: main.js
