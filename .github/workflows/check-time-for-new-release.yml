@@ -12,4 +12,4 @@ permissions:
   
 jobs:
   check-time-for-new-release:
-    uses: devops-actions/.github/.github/workflows/time-for-new-release.yml@main
+    uses: devops-actions/.github/.github/workflows/time-for-new-release.yml@ac988029b58dc9e66b496de47d8930ce737f89dc # main
