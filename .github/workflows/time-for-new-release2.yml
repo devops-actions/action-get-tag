@@ -105,6 +105,15 @@ jobs:
           # install the extension
           gh ext install advanced-security/gh-sbom
 
+          # install the CycloneDX CLI (.NET global tool) so we can convert the
+          # SPDX SBOM to CycloneDX locally, instead of using `gh sbom -c`.
+          # The CycloneDX code path in gh-sbom is a known, long-standing upstream bug
+          # (persistent 502 Bad Gateway / GraphQL timeout, since 2023):
+          # https://github.com/advanced-security/gh-sbom/issues/6
+          dotnet tool install --global CycloneDX
+          echo "$HOME/.dotnet/tools" >> $env:GITHUB_PATH
+          $env:PATH = "$HOME/.dotnet/tools:$env:PATH"
+
           $SPDX_SBOM_FILENAME="sbom-spdx.json"
           $CYCLONEDX_SBOM_FILENAME="sbom-cyclonedx.json"
 
@@ -135,9 +144,12 @@ jobs:
           $sbom = Invoke-GhSbomWithRetry -Arguments @('-l') | ConvertFrom-Json
           $sbom | ConvertTo-Json -Depth 100 >> $SPDX_SBOM_FILENAME
 
-          # run it for a CycloneDX SBOM
-          $sbom = Invoke-GhSbomWithRetry -Arguments @('-c', '-l') | ConvertFrom-Json
-          $sbom | ConvertTo-Json -Depth 100 >> $CYCLONEDX_SBOM_FILENAME
+          # convert the SPDX SBOM to a CycloneDX SBOM locally, rather than calling
+          # `gh sbom -c -l` (which hits the broken CycloneDX code path upstream)
+          cyclonedx convert --input-file $SPDX_SBOM_FILENAME --output-file $CYCLONEDX_SBOM_FILENAME --input-format spdxjson --output-format json
+          if ($LASTEXITCODE -ne 0) {
+            throw "cyclonedx convert failed with exit code $LASTEXITCODE"
+          }
 
           echo "SPDX_SBOM_FILENAME=$SPDX_SBOM_FILENAME" >> $env:GITHUB_OUTPUT
           echo "CYCLONEDX_SBOM_FILENAME=$CYCLONEDX_SBOM_FILENAME" >> $env:GITHUB_OUTPUT
