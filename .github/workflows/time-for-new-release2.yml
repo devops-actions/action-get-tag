@@ -104,21 +104,59 @@ jobs:
         run: |
           # install the extension
           gh ext install advanced-security/gh-sbom
-          
+
+          # install the CycloneDX CLI (standalone binary) so we can convert the
+          # SPDX SBOM to CycloneDX locally, instead of using `gh sbom -c`.
+          # The CycloneDX code path in gh-sbom is a known, long-standing upstream bug
+          # (persistent 502 Bad Gateway / GraphQL timeout, since 2023):
+          # https://github.com/advanced-security/gh-sbom/issues/6
+          # Note: this is the CycloneDX/cyclonedx-cli tool, distributed as GitHub
+          # release binaries - it is NOT the "CycloneDX" .NET global tool (which is
+          # a different project, cyclonedx-dotnet, for generating .NET project SBOMs).
+          $cyclonedxCliPath = "$env:RUNNER_TEMP/cyclonedx"
+          Invoke-WebRequest -Uri "https://github.com/CycloneDX/cyclonedx-cli/releases/latest/download/cyclonedx-linux-x64" -OutFile $cyclonedxCliPath
+          chmod +x $cyclonedxCliPath
+
           $SPDX_SBOM_FILENAME="sbom-spdx.json"
           $CYCLONEDX_SBOM_FILENAME="sbom-cyclonedx.json"
-          
+
+          # the GitHub dependency-graph/SBOM API occasionally returns a transient
+          # 502 Bad Gateway, so retry a few times with backoff before giving up.
+          function Invoke-GhSbomWithRetry {
+            param(
+              [string[]]$Arguments,
+              [int]$MaxAttempts = 5
+            )
+
+            for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+              $output = & gh sbom @Arguments 2>&1
+              if ($LASTEXITCODE -eq 0) {
+                return $output
+              }
+
+              Write-Warning "gh sbom $Arguments failed (attempt $attempt/$MaxAttempts): $output"
+              if ($attempt -lt $MaxAttempts) {
+                Start-Sleep -Seconds ([Math]::Min(60, [Math]::Pow(2, $attempt)))
+              }
+            }
+
+            throw "gh sbom $Arguments failed after $MaxAttempts attempts"
+          }
+
           # run it for an SPDX SBOM
-          $sbom = gh sbom -l | ConvertFrom-Json
+          $sbom = Invoke-GhSbomWithRetry -Arguments @('-l') | ConvertFrom-Json
           $sbom | ConvertTo-Json -Depth 100 >> $SPDX_SBOM_FILENAME
-          
-          # run it for a CycloneDX SBOM
-          $sbom = gh sbom -c -l | ConvertFrom-Json
-          $sbom | ConvertTo-Json -Depth 100 >> $CYCLONEDX_SBOM_FILENAME
-          
+
+          # convert the SPDX SBOM to a CycloneDX SBOM locally, rather than calling
+          # `gh sbom -c -l` (which hits the broken CycloneDX code path upstream)
+          & $cyclonedxCliPath convert --input-file $SPDX_SBOM_FILENAME --output-file $CYCLONEDX_SBOM_FILENAME --input-format spdxjson --output-format json
+          if ($LASTEXITCODE -ne 0) {
+            throw "cyclonedx convert failed with exit code $LASTEXITCODE"
+          }
+
           echo "SPDX_SBOM_FILENAME=$SPDX_SBOM_FILENAME" >> $env:GITHUB_OUTPUT
           echo "CYCLONEDX_SBOM_FILENAME=$CYCLONEDX_SBOM_FILENAME" >> $env:GITHUB_OUTPUT
-          
+
 ################################################################################################## 
 #   temp for testing
 #################################################################################################
@@ -144,5 +182,5 @@ jobs:
           git push --tags
           
           # create a new release
-          gh release create v${{ steps.semver.outputs.semver }} --generate-release-notes '${{ steps.sbom.outputs.CYCLONEDX_SBOM_FILENAME }}#SBOM CycloneDX'
+          gh release create v${{ steps.semver.outputs.semver }} --generate-notes '${{ steps.sbom.outputs.CYCLONEDX_SBOM_FILENAME }}#SBOM CycloneDX'
           
