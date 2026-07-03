@@ -104,21 +104,44 @@ jobs:
         run: |
           # install the extension
           gh ext install advanced-security/gh-sbom
-          
+
           $SPDX_SBOM_FILENAME="sbom-spdx.json"
           $CYCLONEDX_SBOM_FILENAME="sbom-cyclonedx.json"
-          
+
+          # the GitHub dependency-graph/SBOM API occasionally returns a transient
+          # 502 Bad Gateway, so retry a few times with backoff before giving up.
+          function Invoke-GhSbomWithRetry {
+            param(
+              [string[]]$Arguments,
+              [int]$MaxAttempts = 5
+            )
+
+            for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
+              $output = & gh sbom @Arguments 2>&1
+              if ($LASTEXITCODE -eq 0) {
+                return $output
+              }
+
+              Write-Warning "gh sbom $Arguments failed (attempt $attempt/$MaxAttempts): $output"
+              if ($attempt -lt $MaxAttempts) {
+                Start-Sleep -Seconds ([Math]::Min(60, [Math]::Pow(2, $attempt)))
+              }
+            }
+
+            throw "gh sbom $Arguments failed after $MaxAttempts attempts"
+          }
+
           # run it for an SPDX SBOM
-          $sbom = gh sbom -l | ConvertFrom-Json
+          $sbom = Invoke-GhSbomWithRetry -Arguments @('-l') | ConvertFrom-Json
           $sbom | ConvertTo-Json -Depth 100 >> $SPDX_SBOM_FILENAME
-          
+
           # run it for a CycloneDX SBOM
-          $sbom = gh sbom -c -l | ConvertFrom-Json
+          $sbom = Invoke-GhSbomWithRetry -Arguments @('-c', '-l') | ConvertFrom-Json
           $sbom | ConvertTo-Json -Depth 100 >> $CYCLONEDX_SBOM_FILENAME
-          
+
           echo "SPDX_SBOM_FILENAME=$SPDX_SBOM_FILENAME" >> $env:GITHUB_OUTPUT
           echo "CYCLONEDX_SBOM_FILENAME=$CYCLONEDX_SBOM_FILENAME" >> $env:GITHUB_OUTPUT
-          
+
 ################################################################################################## 
 #   temp for testing
 #################################################################################################
