@@ -105,14 +105,17 @@ jobs:
           # install the extension
           gh ext install advanced-security/gh-sbom
 
-          # install the CycloneDX CLI (.NET global tool) so we can convert the
+          # install the CycloneDX CLI (standalone binary) so we can convert the
           # SPDX SBOM to CycloneDX locally, instead of using `gh sbom -c`.
           # The CycloneDX code path in gh-sbom is a known, long-standing upstream bug
           # (persistent 502 Bad Gateway / GraphQL timeout, since 2023):
           # https://github.com/advanced-security/gh-sbom/issues/6
-          dotnet tool install --global CycloneDX
-          echo "$HOME/.dotnet/tools" >> $env:GITHUB_PATH
-          $env:PATH = "$HOME/.dotnet/tools:$env:PATH"
+          # Note: this is the CycloneDX/cyclonedx-cli tool, distributed as GitHub
+          # release binaries - it is NOT the "CycloneDX" .NET global tool (which is
+          # a different project, cyclonedx-dotnet, for generating .NET project SBOMs).
+          $cyclonedxCliPath = "$env:RUNNER_TEMP/cyclonedx"
+          Invoke-WebRequest -Uri "https://github.com/CycloneDX/cyclonedx-cli/releases/latest/download/cyclonedx-linux-x64" -OutFile $cyclonedxCliPath
+          chmod +x $cyclonedxCliPath
 
           $SPDX_SBOM_FILENAME="sbom-spdx.json"
           $CYCLONEDX_SBOM_FILENAME="sbom-cyclonedx.json"
@@ -146,7 +149,7 @@ jobs:
 
           # convert the SPDX SBOM to a CycloneDX SBOM locally, rather than calling
           # `gh sbom -c -l` (which hits the broken CycloneDX code path upstream)
-          cyclonedx convert --input-file $SPDX_SBOM_FILENAME --output-file $CYCLONEDX_SBOM_FILENAME --input-format spdxjson --output-format json
+          & $cyclonedxCliPath convert --input-file $SPDX_SBOM_FILENAME --output-file $CYCLONEDX_SBOM_FILENAME --input-format spdxjson --output-format json
           if ($LASTEXITCODE -ne 0) {
             throw "cyclonedx convert failed with exit code $LASTEXITCODE"
           }
