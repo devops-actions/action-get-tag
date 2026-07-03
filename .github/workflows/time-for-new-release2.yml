@@ -182,5 +182,5 @@ jobs:
           git push --tags
           
           # create a new release
-          gh release create v${{ steps.semver.outputs.semver }} --generate-release-notes '${{ steps.sbom.outputs.CYCLONEDX_SBOM_FILENAME }}#SBOM CycloneDX'
+          gh release create v${{ steps.semver.outputs.semver }} --generate-notes '${{ steps.sbom.outputs.CYCLONEDX_SBOM_FILENAME }}#SBOM CycloneDX'
           
