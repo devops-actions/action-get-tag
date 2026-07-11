@@ -13,3 +13,7 @@ updates:
     interval: monthly
     time: "19:00"
   open-pull-requests-limit: 10
+  groups:
+    github-actions:
+      patterns:
+        - "*"
