@@ -19,21 +19,25 @@ jobs:
       - name: Run from main.js
         id: tag_dev
         run: |
+          # The runner uses `bash -e`, so capture the exit codes of the expected failures
+          # instead of letting the first one end the step (same fix as test.yml in #119).
+          set +e
           GITHUB_REF="" node main.js
-          # shellcheck disable=SC2181
-          if [ $? -ne 1 ]; then echo "Expected failure on no GITHUB_REF set"; fi
+          EXIT_CODE=$?
+          if [ $EXIT_CODE -ne 1 ]; then echo "Expected failure on no GITHUB_REF set"; fi
 
           GITHUB_REF=origin/refs/tag/v1 node main.js
-          # shellcheck disable=SC2181
-          if [ $? -ne 1 ]; then echo "Expected failure on invalid ref"; fi
+          EXIT_CODE=$?
+          if [ $EXIT_CODE -ne 1 ]; then echo "Expected failure on invalid ref"; fi
 
           GITHUB_REF=refs/tag/v1 node main.js
-          # shellcheck disable=SC2181
-          if [ $? -ne 0 ]; then echo "Not expected a failure on valid ref to tag"; fi
+          EXIT_CODE=$?
+          if [ $EXIT_CODE -ne 0 ]; then echo "Not expected a failure on valid ref to tag"; fi
 
           GITHUB_REF=refs/heads/main node main.js
-          # shellcheck disable=SC2181
-          if [ $? -ne 0 ]; then echo "Not expected a failure on valid ref to branch"; fi
+          EXIT_CODE=$?
+          if [ $EXIT_CODE -ne 0 ]; then echo "Not expected a failure on valid ref to branch"; fi
+          set -e
 
           GITHUB_REF=refs/tags/v1.0.0 node main.js
           # shellcheck disable=SC2181
